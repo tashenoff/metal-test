@@ -1,0 +1,13 @@
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/listings": "pages/listings.js",
+  "/api/listings": "pages/api/listings.js",
+  "/listing/[id]": "pages/listing/[id].js",
+  "/api/listings/[id]": "pages/api/listings/[id].js",
+  "/login": "pages/login.js",
+  "/api/auth": "pages/api/auth.js",
+  "/api/user": "pages/api/user.js",
+  "/create-listing": "pages/create-listing.js"
+}
