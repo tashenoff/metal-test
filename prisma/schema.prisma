@@ -11,24 +11,28 @@ generator client {
 
 model User {
   id            Int      @id @default(autoincrement())
+  name          String?  // Имя пользователя
   email         String   @unique
   password      String
   role          String   // Строка для ролей
   points        Int?     // Баллы
   companyName   String?  // Название компании
   companyBIN    String?  // БИН компании
+  phoneNumber   String?  // Номер телефона пользователя (новое поле)
   listings      Listing[] // Связь с объявлениями
   responses     Response[] // Отклики на объявления
 }
 
 model Listing {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String
-  published Boolean  @default(false)
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
-  responses Response[] // Отклики на это объявление
+  id            Int      @id @default(autoincrement())
+  title         String
+  content       String
+  published     Boolean  @default(false)
+  deliveryDate  DateTime @default(now()) // Устанавливаем значение по умолчанию
+  publishedAt   DateTime  @default(now()) // Добавлено поле даты публикации
+  author        User     @relation(fields: [authorId], references: [id])
+  authorId      Int
+  responses     Response[] // Отклики на это объявление
 }
 
 model Response {
@@ -40,10 +44,5 @@ model Response {
   listingId   Int
   status      String   @default("pending") // Статус отклика (pending, approved, rejected)
   createdAt   DateTime @default(now())
-  
-
-
-
+  accepted    Boolean  @default(false) 
 }
-
-  

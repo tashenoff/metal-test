@@ -2,13 +2,5 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/listing/[id]": "pages/listing/[id].js",
-  "/listings": "pages/listings.js",
-  "/login": "pages/login.js",
-  "/api/user": "pages/api/user.js",
-  "/api/responses": "pages/api/responses.js",
-  "/api/listings/[id]": "pages/api/listings/[id].js",
-  "/api/listings": "pages/api/listings.js",
-  "/api/auth": "pages/api/auth.js",
-  "/create-listing": "pages/create-listing.js"
+  "/responses": "pages/responses.js"
 }
