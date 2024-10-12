@@ -8,25 +8,29 @@ async function main() {
   await prisma.listing.deleteMany({});
 
   // Хэшируем пароль
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const hashedPassword = await bcrypt.hash('admin', 10);
 
   // Создаем пользователя с ролью PUBLISHER (у него не будет баллов)
   const publisher = await prisma.user.create({
     data: {
-      email: 'publisher@example.com',
+      email: 'a@p.com',
       password: hashedPassword,
       role: 'PUBLISHER',
       points: null, // Нет баллов
+      companyName: 'Publisher Company', // Название компании
+      companyBIN: '123456789', // БИН компании
     },
   });
 
   // Создаем пользователя с ролью RESPONDER (у него 10 баллов по умолчанию)
   const responder = await prisma.user.create({
     data: {
-      email: 'responder@example.com',
+      email: 'a@r.com',
       password: hashedPassword,
       role: 'RESPONDER',
       points: 10, // 10 баллов
+      companyName: 'Responder Company', // Название компании
+      companyBIN: '987654321', // БИН компании
     },
   });
 

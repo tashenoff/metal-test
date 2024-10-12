@@ -10,12 +10,15 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  role      String   // Вместо enum используем String
-  points    Int?     // У публишера баллы будут NULL
-  listings  Listing[] // Связь с объявлениями
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password      String
+  role          String   // Строка для ролей
+  points        Int?     // Баллы
+  companyName   String?  // Название компании
+  companyBIN    String?  // БИН компании
+  listings      Listing[] // Связь с объявлениями
+  responses     Response[] // Отклики на объявления
 }
 
 model Listing {
@@ -25,4 +28,22 @@ model Listing {
   published Boolean  @default(false)
   author    User     @relation(fields: [authorId], references: [id])
   authorId  Int
+  responses Response[] // Отклики на это объявление
 }
+
+model Response {
+  id          Int      @id @default(autoincrement())
+  responder   User     @relation(fields: [responderId], references: [id])
+  responderId Int
+  message     String?  // Убедитесь, что это поле существует
+  listing     Listing  @relation(fields: [listingId], references: [id])
+  listingId   Int
+  status      String   @default("pending") // Статус отклика (pending, approved, rejected)
+  createdAt   DateTime @default(now())
+  
+
+
+
+}
+
+  
