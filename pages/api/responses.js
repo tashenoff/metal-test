@@ -32,7 +32,10 @@ export default async function handler(req, res) {
             }
 
             // Получаем информацию о объявлении
-            const listing = await prisma.listing.findUnique({ where: { id: parseInt(listingId) } });
+            const listing = await prisma.listing.findUnique({
+                where: { id: parseInt(listingId) },
+                include: { author: true },
+            });
             console.log('Listing data:', listing);
 
             if (!listing) {

@@ -23,6 +23,9 @@ export default async function handler(req, res) {
                             select: {
                                 name: true,
                                 companyName: true,
+                                phoneNumber: true,
+                                email: true,
+                                companyBIN: true,
                             },
                         },
                     },

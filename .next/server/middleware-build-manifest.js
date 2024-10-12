@@ -19,6 +19,21 @@ self.__BUILD_MANIFEST = {
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
+    "/listing/[id]": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/listing/[id].js"
+    ],
+    "/listings": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/listings.js"
+    ],
+    "/publisher": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/publisher.js"
+    ],
     "/responses": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",

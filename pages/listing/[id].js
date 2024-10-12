@@ -79,7 +79,7 @@ const ListingPage = () => {
                 message: responseMessage,
             }),
         });
-    
+
         const responseText = await response.text(); // Получаем ответ как текст
         console.log('Response:', responseText); // Логируем ответ
     
@@ -92,9 +92,9 @@ const ListingPage = () => {
             setFeedback(`Ошибка при отправке отклика: ${responseText}`);
         }
     };
-    
+
     // Проверяем, отправлял ли текущий пользователь отклик
-    const hasResponded = responses.some((response) => response.responderId === userId); // Используем userId для проверки
+    const hasResponded = responses.some((response) => response.responderId === userId);
 
     // Обработчик принятия отклика
     const handleAcceptResponse = async (responseId) => {
@@ -105,12 +105,12 @@ const ListingPage = () => {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ responseId }), // Передаём responseId в теле запроса
+            body: JSON.stringify({ responseId, userId }),
         });
 
         if (response.ok) {
             setFeedback('Отклик принят!');
-            // Обновите отклики, чтобы отобразить изменения
+            // Обновляем статус принятого отклика
             setResponses((prevResponses) =>
                 prevResponses.map((resp) =>
                     resp.id === responseId ? { ...resp, accepted: true } : resp
@@ -131,12 +131,12 @@ const ListingPage = () => {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ responseId }), // Передаём responseId в теле запроса
+            body: JSON.stringify({ responseId }),
         });
 
         if (response.ok) {
             setFeedback('Отклик отклонён!');
-            // Обновите отклики, чтобы отобразить изменения
+            // Обновляем статус отклонённого отклика
             setResponses((prevResponses) =>
                 prevResponses.filter((resp) => resp.id !== responseId)
             );
@@ -150,12 +150,38 @@ const ListingPage = () => {
         return <p>Загрузка...</p>;
     }
 
+    // Функция для отображения статуса отклика
+    const getResponseStatus = (response) => {
+        if (response.accepted) return 'Принят';
+        return 'На рассмотрении';
+    };
+
     return (
         <div>
             <Header />
             <h1>{listing.title}</h1>
             <p>{listing.content}</p>
-            {role !== 'PUBLISHER' && !hasResponded && ( // Скрываем форму, если респондент уже отправил отклик
+            <p>Дата публикации: {listing.publishedAt}</p>
+            <p>Срок поставки: {listing.deliveryDate}</p>
+
+            {/* Показываем отправленный отклик текущего пользователя */}
+            {role !== 'PUBLISHER' && hasResponded && (
+                <div>
+                    <h3>Ваш отклик:</h3>
+                    {responses
+                        .filter((response) => response.responderId === userId)
+                        .map((response) => (
+                            <div key={response.id}>
+                                <p>Сообщение: {response.message}</p>
+                                <p>Дата отклика: {new Date(response.createdAt).toLocaleDateString()}</p>
+                                <p>Статус: {getResponseStatus(response)}</p>
+                            </div>
+                        ))}
+                </div>
+            )}
+
+            {/* Форма для отправки откликов */}
+            {role !== 'PUBLISHER' && !hasResponded && (
                 <form onSubmit={handleResponseSubmit}>
                     <textarea
                         placeholder="Напишите ваш отклик"
@@ -165,6 +191,8 @@ const ListingPage = () => {
                     <button type="submit">Отправить отклик</button>
                 </form>
             )}
+
+            {/* Показываем список откликов для владельца объявления */}
             {role === 'PUBLISHER' && responses.length > 0 && (
                 <ResponsesList 
                     responses={responses}
@@ -172,6 +200,7 @@ const ListingPage = () => {
                     onDecline={handleDeclineResponse}
                 />
             )}
+
             {feedback && <p>{feedback}</p>}
         </div>
     );

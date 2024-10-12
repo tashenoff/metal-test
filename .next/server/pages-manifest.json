@@ -2,5 +2,15 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/responses": "pages/responses.js"
+  "/publisher": "pages/publisher.js",
+  "/responses": "pages/responses.js",
+  "/listings": "pages/listings.js",
+  "/api/publisher/publishListing": "pages/api/publisher/publishListing.js",
+  "/api/user": "pages/api/user.js",
+  "/api/listings": "pages/api/listings.js",
+  "/listing/[id]": "pages/listing/[id].js",
+  "/api/responses": "pages/api/responses.js",
+  "/api/listings/[id]": "pages/api/listings/[id].js",
+  "/api/responses/declineResponse": "pages/api/responses/declineResponse.js",
+  "/api/responses/getResponses": "pages/api/responses/getResponses.js"
 }

@@ -1,14 +1,13 @@
-// pages/responses.js
 import { useEffect, useState } from 'react';
 import Header from '../components/Header';
 
 const ResponsesPage = () => {
     const [responses, setResponses] = useState([]);
     const [feedback, setFeedback] = useState('');
-    const [userId, setUserId] = useState(null); // Идентификатор пользователя
+    const [userId, setUserId] = useState(null);
+    const [activeTab, setActiveTab] = useState('pending'); // По умолчанию вкладка "pending"
 
     useEffect(() => {
-        // Получаем данные пользователя
         const token = localStorage.getItem('token');
         if (token) {
             const fetchUserData = async () => {
@@ -17,8 +16,8 @@ const ResponsesPage = () => {
                 });
                 if (response.ok) {
                     const user = await response.json();
-                    setUserId(user.id); // Сохраняем идентификатор пользователя
-                    fetchResponses(user.id); // Получаем отклики для текущего пользователя
+                    setUserId(user.id);
+                    fetchResponses(user.id);
                 } else {
                     setFeedback('Ошибка при загрузке данных пользователя.');
                 }
@@ -39,43 +38,65 @@ const ResponsesPage = () => {
         }
     };
 
+    // Фильтруем отклики по статусу
+    const filteredResponses = responses.filter((response) => response.status === activeTab);
+
     return (
         <div>
             <Header />
             <h1>Мои отклики</h1>
             {feedback && <p>{feedback}</p>}
-            {responses.length > 0 ? (
+
+            {/* Вкладки */}
+            <div>
+                <button onClick={() => setActiveTab('pending')} className={activeTab === 'pending' ? 'active-tab' : ''}>
+                    Ожидающие
+                </button>
+                <button onClick={() => setActiveTab('approved')} className={activeTab === 'approved' ? 'active-tab' : ''}>
+                    Одобренные
+                </button>
+                <button onClick={() => setActiveTab('rejected')} className={activeTab === 'rejected' ? 'active-tab' : ''}>
+                    Отклоненные
+                </button>
+            </div>
+
+            {/* Таблица откликов */}
+            {filteredResponses.length > 0 ? (
                 <table>
                     <thead>
                         <tr>
                             <th>Название объявления</th>
                             <th>Статус</th>
-                            <th>Имя паблишера</th>
-                            <th>Контактная информация</th>
+                            {activeTab === 'approved' && (
+                                <>
+                                    <th>Имя паблишера</th>
+                                    <th>Контактная информация</th>
+                                </>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
-                        {responses.map((response) => (
+                        {filteredResponses.map((response) => (
                             <tr key={response.id}>
                                 <td>{response.listing.title}</td>
                                 <td>{response.status}</td>
-                                {response.status === 'approved' ? ( // Условный рендеринг
+                                {activeTab === 'approved' ? ( // Показываем данные паблишера только для "approved"
                                     <>
                                         <td>{response.listing.author.name}</td>
                                         <td>{response.listing.author.companyName}</td>
+                                        <td>{response.listing.author.phoneNumber}</td>
+                                        <td>{response.listing.author.companyBIN}</td>
+                                        <td>{response.listing.author.email}</td>
                                     </>
                                 ) : (
-                                    <>
-                                        <td>—</td> {/* Отображаем дефис, если статус не approved */}
-                                        <td>—</td>
-                                    </>
+                                    <td>—</td> // Не показываем данные паблишера для других статусов
                                 )}
                             </tr>
                         ))}
                     </tbody>
                 </table>
             ) : (
-                <p>Нет откликов.</p>
+                <p>Нет откликов в данной категории.</p>
             )}
         </div>
     );

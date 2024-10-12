@@ -21,6 +21,7 @@ model User {
   phoneNumber   String?  // Номер телефона пользователя (новое поле)
   listings      Listing[] // Связь с объявлениями
   responses     Response[] // Отклики на объявления
+  city          String?  // Город пользователя (новое поле)
 }
 
 model Listing {
