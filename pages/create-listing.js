@@ -39,34 +39,46 @@ const CreateListing = () => {
   };
 
   return (
-    <div>
-         <Header />
-      <h1>Создание объявления</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>
-            Заголовок:
+    <div className="min-h-screen bg-gray-100">
+      <Header />
+      <div className="container mx-auto p-8">
+        <h1 className="text-3xl font-bold mb-6">Создание объявления</h1>
+        {message && <p className="mt-4 text-green-500">{message}</p>}
+        <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
+              Заголовок:
+            </label>
             <input
               type="text"
+              id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring focus:ring-blue-500"
             />
-          </label>
-        </div>
-        <div>
-          <label>
-            Содержимое:
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="content">
+              Содержимое:
+            </label>
             <textarea
+              id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               required
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring focus:ring-blue-500"
             />
-          </label>
-        </div>
-        <button type="submit">Добавить объявление</button>
-      </form>
-      {message && <p>{message}</p>}
+          </div>
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring focus:ring-blue-300"
+          >
+            Добавить объявление
+          </button>
+        </form>
+        
+      </div>
     </div>
   );
 };

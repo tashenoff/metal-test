@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Header from '../components/Header';
+
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -28,26 +28,38 @@ export default function Login() {
   };
 
   return (
-    <div>
-         <Header />
-      <h1>Авторизация</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Войти</button>
-      </form>
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-900">
+      <div className="bg-white shadow-md rounded-lg p-8 max-w-sm w-full">
+        <h1 className="text-2xl font-semibold text-center text-gray-700 mb-6">Авторизация</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="mb-6">
+            <input
+              type="password"
+              placeholder="Пароль"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white font-semibold py-2 rounded-md hover:bg-blue-600 transition duration-200"
+          >
+            Войти
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

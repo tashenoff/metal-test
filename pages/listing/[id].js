@@ -61,13 +61,13 @@ const ListingPage = () => {
 
     const handleResponseSubmit = async (e) => {
         e.preventDefault();
-    
+
         const token = localStorage.getItem('token');
         if (!token) {
             setFeedback('Вы должны быть авторизованы для отправки отклика.');
             return;
         }
-    
+
         const response = await fetch('/api/responses', {
             method: 'POST',
             headers: {
@@ -82,7 +82,7 @@ const ListingPage = () => {
 
         const responseText = await response.text(); // Получаем ответ как текст
         console.log('Response:', responseText); // Логируем ответ
-    
+
         if (response.ok) {
             const newResponse = JSON.parse(responseText); // Парсим его как JSON
             setResponses((prevResponses) => [...prevResponses, newResponse]);
@@ -157,52 +157,55 @@ const ListingPage = () => {
     };
 
     return (
-        <div>
+        <>
             <Header />
-            <h1>{listing.title}</h1>
-            <p>{listing.content}</p>
-            <p>Дата публикации: {listing.publishedAt}</p>
-            <p>Срок поставки: {listing.deliveryDate}</p>
+            <div className="container mx-auto">
+                <h1 className="text-2xl font-bold mb-4">{listing.title}</h1>
+                <p className="mb-2">{listing.content}</p>
+                <p className="text-gray-600">Дата публикации: {new Date(listing.publishedAt).toLocaleDateString()}</p>
+                <p className="text-gray-600">Срок поставки: {new Date(listing.deliveryDate).toLocaleDateString()}</p>
 
-            {/* Показываем отправленный отклик текущего пользователя */}
-            {role !== 'PUBLISHER' && hasResponded && (
-                <div>
-                    <h3>Ваш отклик:</h3>
-                    {responses
-                        .filter((response) => response.responderId === userId)
-                        .map((response) => (
-                            <div key={response.id}>
-                                <p>Сообщение: {response.message}</p>
-                                <p>Дата отклика: {new Date(response.createdAt).toLocaleDateString()}</p>
-                                <p>Статус: {getResponseStatus(response)}</p>
-                            </div>
-                        ))}
-                </div>
-            )}
+                {/* Показываем отправленный отклик текущего пользователя */}
+                {role !== 'PUBLISHER' && hasResponded && (
+                    <div className="mt-4 border p-3 rounded shadow">
+                        <h3 className="text-lg font-semibold">Ваш отклик:</h3>
+                        {responses
+                            .filter((response) => response.responderId === userId)
+                            .map((response) => (
+                                <div key={response.id} className="mt-2">
+                                    <p><strong>Сообщение:</strong> {response.message}</p>
+                                    <p><strong>Дата отклика:</strong> {new Date(response.createdAt).toLocaleDateString()}</p>
+                                    <p><strong>Статус:</strong> {getResponseStatus(response)}</p>
+                                </div>
+                            ))}
+                    </div>
+                )}
 
-            {/* Форма для отправки откликов */}
-            {role !== 'PUBLISHER' && !hasResponded && (
-                <form onSubmit={handleResponseSubmit}>
-                    <textarea
-                        placeholder="Напишите ваш отклик"
-                        value={responseMessage}
-                        onChange={(e) => setResponseMessage(e.target.value)}
+                {/* Форма для отправки откликов */}
+                {role !== 'PUBLISHER' && !hasResponded && (
+                    <form onSubmit={handleResponseSubmit} className="mt-4 border p-4 rounded shadow">
+                        <textarea
+                            className="border w-full p-2 mb-2"
+                            placeholder="Напишите ваш отклик"
+                            value={responseMessage}
+                            onChange={(e) => setResponseMessage(e.target.value)}
+                        />
+                        <button type="submit" className="bg-blue-500 text-white p-2 rounded">Отправить отклик</button>
+                    </form>
+                )}
+
+                {/* Показываем список откликов для владельца объявления */}
+                {role === 'PUBLISHER' && responses.length > 0 && (
+                    <ResponsesList
+                        responses={responses}
+                        onAccept={handleAcceptResponse}
+                        onDecline={handleDeclineResponse}
                     />
-                    <button type="submit">Отправить отклик</button>
-                </form>
-            )}
+                )}
 
-            {/* Показываем список откликов для владельца объявления */}
-            {role === 'PUBLISHER' && responses.length > 0 && (
-                <ResponsesList 
-                    responses={responses}
-                    onAccept={handleAcceptResponse}
-                    onDecline={handleDeclineResponse}
-                />
-            )}
-
-            {feedback && <p>{feedback}</p>}
-        </div>
+                {feedback && <p className="text-red-500 mt-4">{feedback}</p>}
+            </div>
+        </>
     );
 };
 

@@ -26,6 +26,7 @@ export default async function handler(req, res) {
                                 phoneNumber: true,
                                 email: true,
                                 companyBIN: true,
+                                
                             },
                         },
                     },
