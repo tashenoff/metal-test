@@ -3,14 +3,15 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/publisher": "pages/publisher.js",
-  "/listing/[id]": "pages/listing/[id].js",
-  "/api/user": "pages/api/user.js",
-  "/api/listings/[id]": "pages/api/listings/[id].js",
   "/responses": "pages/responses.js",
   "/login": "pages/login.js",
   "/api/auth": "pages/api/auth.js",
-  "/api/listings": "pages/api/listings.js",
   "/listings": "pages/listings.js",
-  "/api/responses/getResponses": "pages/api/responses/getResponses.js",
-  "/api/responses": "pages/api/responses.js"
+  "/api/user": "pages/api/user.js",
+  "/api/listings": "pages/api/listings.js",
+  "/api/publisher/listings": "pages/api/publisher/listings.js",
+  "/listing/[id]": "pages/listing/[id].js",
+  "/api/responses": "pages/api/responses.js",
+  "/api/listings/[id]": "pages/api/listings/[id].js",
+  "/api/responses/getResponses": "pages/api/responses/getResponses.js"
 }

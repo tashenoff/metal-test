@@ -55,10 +55,25 @@ const ResponsesPage = () => {
         setSelectedResponse(null);
     };
 
+    // Get background color class based on status
+    const getStatusClass = (status) => {
+        switch (status) {
+            case 'approved':
+                return 'bg-green-100 text-green-800';
+            case 'rejected':
+                return 'bg-red-100 text-red-800';
+            case 'pending':
+                return 'bg-orange-100 text-orange-800';
+            default:
+                return '';
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-100">
             <Header />
-            <div className='container mx-auto'>            <h1 className="text-2xl font-bold mb-4">Мои отклики</h1>
+            <div className='container mx-auto'>
+                <h1 className="text-2xl font-bold mb-4">Мои отклики</h1>
                 {feedback && <p className="text-red-500 mb-4">{feedback}</p>}
 
                 {/* Tabs */}
@@ -101,7 +116,7 @@ const ResponsesPage = () => {
                                         onClick={() => handleResponseClick(response)} // Handle click to open modal
                                     >
                                         <td className="px-4 py-2 border-b">{response.listing.title}</td>
-                                        <td className="px-4 py-2 border-b">{response.status}</td>
+                                        <td className={`px-4 py-2 border-b ${getStatusClass(response.status)}`}>{response.status}</td> {/* Apply status class only to the status cell */}
                                     </tr>
                                 ))}
                             </tbody>
@@ -116,7 +131,10 @@ const ResponsesPage = () => {
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                         <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
                             <h2 className="text-xl font-bold mb-2">{selectedResponse.listing.title}</h2>
-                            <p className="mb-2"><strong>Статус:</strong> {selectedResponse.status}</p>
+                            <p className="mb-2">
+                                <strong>Статус:</strong>
+                                <span className={`ml-2 ${getStatusClass(selectedResponse.status)}`}>{selectedResponse.status}</span> {/* Apply status class only to the status text */}
+                            </p>
                             <p className="mb-2"><strong>Дата отклика:</strong> {new Date(selectedResponse.createdAt).toLocaleDateString()}</p> {/* Add response date */}
                             <p className="mb-2"><strong>Контент:</strong></p>
                             <p className="mb-4">{selectedResponse.listing.content}</p> {/* Display response content */}
@@ -146,7 +164,6 @@ const ResponsesPage = () => {
                 )}
             </div>
         </div>
-
     );
 };
 
