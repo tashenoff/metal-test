@@ -1,5 +1,5 @@
-// pages/api/responses.js
 import prisma from '../../prisma/client';
+import jwt from 'jsonwebtoken'; // Подключаем библиотеку для работы с JWT
 
 export default async function handler(req, res) {
     try {
@@ -8,17 +8,39 @@ export default async function handler(req, res) {
         if (req.method === 'POST') {
             const { listingId, message } = req.body;
 
-            // Проверяем, пришли ли listingId и message в теле запроса
             if (!listingId || !message) {
                 return res.status(400).json({ message: 'Необходимы listingId и message.' });
             }
 
             console.log('Received body:', { listingId, message });
 
-            const userId = 10; // Замените на логику получения ID пользователя
-            console.log('User ID:', userId);
+            // Извлекаем токен из заголовка Authorization
+            const authHeader = req.headers.authorization;
+            console.log('Authorization header:', authHeader);
 
-            // Получаем информацию о пользователе
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                return res.status(401).json({ message: 'Необходим токен для авторизации.' });
+            }
+
+            const token = authHeader.split(' ')[1]; // Извлекаем токен
+            console.log('Extracted token:', token);
+
+            // Декодируем JWT-токен для получения userId
+            let decodedToken;
+            try {
+                decodedToken = jwt.verify(token, 'your_jwt_secret'); // Используйте ваш секретный ключ для верификации токена
+                console.log('Decoded token:', decodedToken);
+            } catch (error) {
+                return res.status(401).json({ message: 'Неверный токен.' });
+            }
+
+            const userId = decodedToken.id; // Извлекаем userId из токена
+            console.log('User ID from token:', userId);
+
+            if (!userId) {
+                return res.status(400).json({ message: 'Неверный токен.' });
+            }
+
             const user = await prisma.user.findUnique({ where: { id: userId } });
             console.log('User data:', user);
 
@@ -26,12 +48,10 @@ export default async function handler(req, res) {
                 return res.status(404).json({ message: 'Пользователь не найден.' });
             }
 
-            // Проверяем, есть ли у пользователя достаточно баллов
             if (user.points === null || user.points <= 0) {
                 return res.status(400).json({ message: 'Недостаточно баллов для отклика.' });
             }
 
-            // Получаем информацию о объявлении
             const listing = await prisma.listing.findUnique({
                 where: { id: parseInt(listingId) },
                 include: { author: true },
@@ -42,12 +62,10 @@ export default async function handler(req, res) {
                 return res.status(404).json({ message: 'Объявление не найдено.' });
             }
 
-            // Проверка, является ли пользователь владельцем объявления
             if (listing.authorId === userId) {
                 return res.status(403).json({ message: 'Владелец объявления не может отправлять отклики.' });
             }
 
-            // Проверка, есть ли уже отклик от этого респондента на данное объявление
             const existingResponse = await prisma.response.findFirst({
                 where: {
                     responderId: userId,
@@ -60,18 +78,16 @@ export default async function handler(req, res) {
                 return res.status(400).json({ message: 'Вы уже отправили отклик на это объявление.' });
             }
 
-            // Создаем новый отклик
             const response = await prisma.response.create({
                 data: {
                     responderId: userId,
                     listingId: parseInt(listingId),
                     message,
-                    accepted: false, // По умолчанию отклик не принят
+                    accepted: false,
                 },
             });
             console.log('New response created:', response);
 
-            // Обновляем баллы пользователя
             await prisma.user.update({
                 where: { id: userId },
                 data: { points: user.points - 1 },
@@ -79,14 +95,13 @@ export default async function handler(req, res) {
 
             return res.status(201).json(response);
         } else if (req.method === 'GET') {
-            const { id: listingId } = req.query; // Изменено на id
+            const { id: listingId } = req.query;
             console.log('Fetching responses for listing ID:', listingId);
 
-            // Получаем отклики на данное объявление
             const responses = await prisma.response.findMany({
                 where: { listingId: parseInt(listingId) },
                 include: {
-                    responder: true, // Это включит данные о респонденте
+                    responder: true,
                 },
             });
 
