@@ -83,7 +83,7 @@ export default async function handler(req, res) {
                     responderId: userId,
                     listingId: parseInt(listingId),
                     message,
-                    accepted: false,
+                    accepted: null,
                 },
             });
             console.log('New response created:', response);

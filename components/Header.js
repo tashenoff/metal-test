@@ -7,6 +7,7 @@ const Header = () => {
     const router = useRouter();
     const [points, setPoints] = useState(0);
     const [role, setRole] = useState(null);
+    const [username, setUsername] = useState(''); // Инициализация состояния для имени пользователя
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
@@ -23,6 +24,7 @@ const Header = () => {
                     const user = await response.json();
                     setPoints(user.points);
                     setRole(user.role);
+                    setUsername(user.name); // Устанавливаем имя пользователя
                 }
             };
             fetchUserData();
@@ -63,7 +65,10 @@ const Header = () => {
                                 </div>
                             )}
 
-                            <span className="text-sm">{role === 'RESPONDER' && `Баллы: ${points}`}</span>
+                            <span className="text-sm">
+                                
+                            {`Привет, ${username}! `}
+                                {role === 'RESPONDER' && `Баллы: ${points}`}</span>
                             <button onClick={handleLogout} className="bg-red-600 hover:bg-red-500 text-white font-semibold px-3 py-1 rounded">
                                 Выход
                             </button>

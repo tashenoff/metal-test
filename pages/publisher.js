@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
 import Header from '../components/Header';
+import Link from 'next/link';
 
 const PublisherPage = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [activeTab, setActiveTab] = useState('published'); // Состояние для активной вкладки
+  const [activeTab, setActiveTab] = useState('published');
+  const [responseCounts, setResponseCounts] = useState({});
+  const [responseCountsByStatus, setResponseCountsByStatus] = useState({});
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+
     if (token) {
       const fetchUserData = async () => {
         try {
@@ -19,20 +23,20 @@ const PublisherPage = () => {
           if (response.ok) {
             const user = await response.json();
             setUserId(user.id);
-            await fetchListings(user.id); // Передаем userId для получения объявлений
+            await fetchListings(user.id);
           } else {
             setError('Ошибка при загрузке данных пользователя.');
           }
         } catch (err) {
           setError('Ошибка при загрузке данных пользователя.');
         } finally {
-          setLoading(false); // Завершаем загрузку
+          setLoading(false);
         }
       };
       fetchUserData();
     } else {
       setError('Вы должны быть авторизованы для доступа к объявлениям.');
-      setLoading(false); // Завершаем загрузку
+      setLoading(false);
     }
   }, []);
 
@@ -43,20 +47,44 @@ const PublisherPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId }), // Передаем userId в теле запроса
+        body: JSON.stringify({ userId }),
       });
 
       if (response.ok) {
         const data = await response.json();
         setListings(data);
+        await fetchResponseCounts(data);
+        await fetchResponseCountsByStatus(data);
       } else {
         setError('Ошибка при загрузке объявлений.');
       }
     } catch (err) {
       setError('Ошибка при загрузке объявлений.');
-    } finally {
-      setLoading(false); // Завершаем загрузку
     }
+  };
+
+  const fetchResponseCounts = async (listings) => {
+    const counts = {};
+    for (const listing of listings) {
+      const response = await fetch(`/api/responses/getResponsesCount?listingId=${listing.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        counts[listing.id] = data.count; 
+      }
+    }
+    setResponseCounts(counts);
+  };
+
+  const fetchResponseCountsByStatus = async (listings) => {
+    const counts = {};
+    for (const listing of listings) {
+      const response = await fetch(`/api/responses/getResponsesCountByStatus?listingId=${listing.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        counts[listing.id] = data; 
+      }
+    }
+    setResponseCountsByStatus(counts); 
   };
 
   const handlePublish = async (listingId) => {
@@ -66,7 +94,7 @@ const PublisherPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ listingId }), // Передаем listingId в теле запроса
+        body: JSON.stringify({ listingId }),
       });
 
       if (response.ok) {
@@ -91,7 +119,7 @@ const PublisherPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ listingId }), // Передаем listingId в теле запроса
+        body: JSON.stringify({ listingId }),
       });
 
       if (response.ok) {
@@ -112,7 +140,6 @@ const PublisherPage = () => {
   if (loading) return <p>Загрузка...</p>;
   if (error) return <p>Ошибка: {error}</p>;
 
-  // Фильтрация объявлений по выбранной вкладке
   const filteredListings = listings.filter((listing) =>
     activeTab === 'published' ? listing.published : !listing.published
   );
@@ -121,7 +148,6 @@ const PublisherPage = () => {
     <div>
       <Header />
       <div className="container mx-auto">
-
         <div className="flex items-center my-4 justify-between">
           <h1>Ваши объявления</h1>
           <div>
@@ -140,6 +166,7 @@ const PublisherPage = () => {
           </div>
         </div>
       </div>
+
       {filteredListings.length === 0 ? (
         <p>У вас нет объявлений.</p>
       ) : (
@@ -147,7 +174,9 @@ const PublisherPage = () => {
           <ul className="space-y-4">
             {filteredListings.map((listing) => (
               <li key={listing.id} className="border border-gray-300 rounded-lg p-4 shadow-md bg-white">
-                <h2 className="text-xl font-bold">{listing.title}</h2>
+                <Link href={`/listing/${listing.id}`}>
+                  <h2 className="text-xl font-bold">{listing.title}</h2>
+                </Link>
                 <p className="text-gray-700">{listing.content}</p>
                 <p className="text-sm text-gray-500">
                   Опубликовано: {new Date(listing.publishedAt).toLocaleDateString()}
@@ -158,18 +187,28 @@ const PublisherPage = () => {
                 <p className="text-sm text-gray-500">
                   Дата доставки: {new Date(listing.deliveryDate).toLocaleDateString()}
                 </p>
+                {/* Отображение количества откликов */}
+                <div className="mt-2">
+                  <p>Количество откликов: {responseCounts[listing.id] || 0}</p>
+                  {responseCountsByStatus[listing.id] && (
+                    <div>
+                      <p>Ожидающие отклики: {responseCountsByStatus[listing.id].pending || 0}</p>
+                      <p>Обработанные отклики: {responseCountsByStatus[listing.id].approved || 0}</p>
+                    </div>
+                  )}
+                </div>
                 <div className="flex space-x-2 mt-2">
                   <button
                     onClick={() => handlePublish(listing.id)}
                     disabled={listing.published}
-                    className={`px-4 py-2 text-white rounded-md ${listing.published ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
+                    className={`px-4 py-2 text-white rounded-md ${listing.published ? 'bg-gray-400' : 'bg-green-500'}`}
                   >
                     Опубликовать
                   </button>
                   <button
                     onClick={() => handleUnpublish(listing.id)}
                     disabled={!listing.published}
-                    className={`px-4 py-2 text-white rounded-md ${!listing.published ? 'bg-gray-400' : 'bg-red-500 hover:bg-red-600'}`}
+                    className={`px-4 py-2 text-white rounded-md ${!listing.published ? 'bg-gray-400' : 'bg-red-500'}`}
                   >
                     Снять с публикации
                   </button>

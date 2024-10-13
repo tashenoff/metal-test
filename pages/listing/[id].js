@@ -3,14 +3,17 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Header from '../../components/Header';
 import ResponsesList from '../../components/ResponsesList';
+import ResponseForm from '../../components/ResponseForm'; // Импортируем ResponseForm
 
 const ListingPage = () => {
     const [listing, setListing] = useState(null);
-    const [responseMessage, setResponseMessage] = useState('');
     const [feedback, setFeedback] = useState('');
     const [role, setRole] = useState(null); // Роль пользователя
     const [userId, setUserId] = useState(null); // Идентификатор пользователя
     const [responses, setResponses] = useState([]);
+    const [userPoints, setUserPoints] = useState(0); // Баллы пользователя
+    const [isModalOpen, setIsModalOpen] = useState(false); // Состояние модального окна
+    const [modalMessage, setModalMessage] = useState(''); // Сообщение модального окна
     const router = useRouter();
     const { id } = router.query; // Используйте id
 
@@ -39,6 +42,7 @@ const ListingPage = () => {
                         const user = await response.json();
                         setRole(user.role); // Сохраняем роль пользователя
                         setUserId(user.id); // Сохраняем идентификатор пользователя
+                        setUserPoints(user.points); // Сохраняем баллы пользователя
                     }
                 };
                 fetchUserData();
@@ -59,12 +63,24 @@ const ListingPage = () => {
         }
     }, [id]);
 
-    const handleResponseSubmit = async (e) => {
-        e.preventDefault();
-
+    // Функция для отображения статуса отклика
+    const getResponseStatus = (response) => {
+        if (response.accepted === true) return 'Принят';
+        if (response.accepted === false) return 'Отклонён';
+        if (response.accepted === null || response.accepted === undefined) return 'На рассмотрении';
+    };
+    
+    const handleResponseSubmit = async (message) => {
         const token = localStorage.getItem('token');
         if (!token) {
             setFeedback('Вы должны быть авторизованы для отправки отклика.');
+            return;
+        }
+
+        // Проверяем, достаточно ли баллов у пользователя
+        if (userPoints < 1) { // Замените 1 на необходимое количество баллов
+            setModalMessage('Недостаточно баллов. Пожалуйста, купите баллы для отправки отклика.');
+            setIsModalOpen(true);
             return;
         }
 
@@ -76,7 +92,7 @@ const ListingPage = () => {
             },
             body: JSON.stringify({
                 listingId: id, // Используйте id для отправки
-                message: responseMessage,
+                message: message,
             }),
         });
 
@@ -87,7 +103,6 @@ const ListingPage = () => {
             const newResponse = JSON.parse(responseText); // Парсим его как JSON
             setResponses((prevResponses) => [...prevResponses, newResponse]);
             setFeedback('Отклик успешно отправлен!');
-            setResponseMessage('');
         } else {
             setFeedback(`Ошибка при отправке отклика: ${responseText}`);
         }
@@ -111,11 +126,11 @@ const ListingPage = () => {
         if (response.ok) {
             setFeedback('Отклик принят!');
             // Обновляем статус принятого отклика
-            setResponses((prevResponses) =>
-                prevResponses.map((resp) =>
-                    resp.id === responseId ? { ...resp, accepted: true } : resp
-                )
-            );
+            // setResponses((prevResponses) =>
+            //     prevResponses.map((resp) =>
+            //         resp.id === responseId ? { ...resp, accepted: true } : resp
+            //     )
+            // );
         } else {
             const errorData = await response.json();
             setFeedback(`Ошибка при принятии отклика: ${errorData.message}`);
@@ -133,38 +148,38 @@ const ListingPage = () => {
             },
             body: JSON.stringify({ responseId }),
         });
-
+    
         if (response.ok) {
             setFeedback('Отклик отклонён!');
-            // Обновляем статус отклонённого отклика
+            // Вместо удаления, обновляем статус отклонённого отклика
             setResponses((prevResponses) =>
-                prevResponses.filter((resp) => resp.id !== responseId)
+                prevResponses.map((resp) =>
+                    resp.id === responseId ? { ...resp, accepted: false } : resp
+                )
             );
         } else {
             const errorData = await response.json();
             setFeedback(`Ошибка при отклонении отклика: ${errorData.message}`);
         }
     };
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
 
     if (!listing) {
         return <p>Загрузка...</p>;
     }
 
-    // Функция для отображения статуса отклика
-    const getResponseStatus = (response) => {
-        if (response.accepted) return 'Принят';
-        return 'На рассмотрении';
-    };
-
     return (
         <>
             <Header />
             <div className="container mx-auto">
-                <h1 className="text-2xl font-bold mb-4">{listing.title}</h1>
-                <p className="mb-2">{listing.content}</p>
-                <p className="text-gray-600">Дата публикации: {new Date(listing.publishedAt).toLocaleDateString()}</p>
-                <p className="text-gray-600">Срок поставки: {new Date(listing.deliveryDate).toLocaleDateString()}</p>
-
+                <div className='w-1/2 py-10'>
+                    <h1 className="text-2xl font-bold mb-4">{listing.title}</h1>
+                    <p className="mb-2">{listing.content}</p>
+                    <p className="text-gray-600">Дата публикации: {new Date(listing.publishedAt).toLocaleDateString()}</p>
+                    <p className="text-gray-600">Срок поставки: {new Date(listing.deliveryDate).toLocaleDateString()}</p>
+                </div>
                 {/* Показываем отправленный отклик текущего пользователя */}
                 {role !== 'PUBLISHER' && hasResponded && (
                     <div className="mt-4 border p-3 rounded shadow">
@@ -183,19 +198,11 @@ const ListingPage = () => {
 
                 {/* Форма для отправки откликов */}
                 {role !== 'PUBLISHER' && !hasResponded && (
-                    <form onSubmit={handleResponseSubmit} className="mt-4 border p-4 rounded shadow">
-                        <textarea
-                            className="border w-full p-2 mb-2"
-                            placeholder="Напишите ваш отклик"
-                            value={responseMessage}
-                            onChange={(e) => setResponseMessage(e.target.value)}
-                        />
-                        <button type="submit" className="bg-blue-500 text-white p-2 rounded">Отправить отклик</button>
-                    </form>
+                    <ResponseForm onSubmit={handleResponseSubmit} feedback={feedback} />
                 )}
 
                 {/* Показываем список откликов для владельца объявления */}
-                {role === 'PUBLISHER' && responses.length > 0 && (
+                {role === 'PUBLISHER' && listing.authorId === userId && responses.length > 0 && (
                     <ResponsesList
                         responses={responses}
                         onAccept={handleAcceptResponse}
@@ -205,6 +212,19 @@ const ListingPage = () => {
 
                 {feedback && <p className="text-red-500 mt-4">{feedback}</p>}
             </div>
+
+            {/* Модальное окно для недостатка баллов */}
+            {isModalOpen && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded shadow-lg">
+                        <h2 className="text-lg font-bold">Ошибка</h2>
+                        <p>{modalMessage}</p>
+                        <button onClick={handleCloseModal} className="mt-4 bg-blue-500 text-white py-2 px-4 rounded">
+                            Закрыть
+                        </button>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

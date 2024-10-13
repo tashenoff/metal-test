@@ -5,8 +5,10 @@
     "jsonwebtoken": "^9.0.2",
     "next": "^14.2.15",
     "prisma": "^5.20.0",
+    "quill": "^2.0.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-quill": "^2.0.0"
   },
   "scripts": {
     "seed": "node prisma/seed.js",

@@ -21,10 +21,10 @@ export default async function handler(req, res) {
             const listingId = response.listingId; // Предполагаем, что у вас есть это поле в отклике
 
             // Обновляем статус публикации объявления на false
-            await prisma.listing.update({
-                where: { id: listingId },
-                data: { published: false }, // Устанавливаем статус публикации на false
-            });
+            // await prisma.listing.update({
+                // where: { id: listingId },
+                // data: { published: false }, // Устанавливаем статус публикации на false
+            // });
 
             return res.status(200).json({ response, message: 'Отклик принят и статус объявления обновлен.' });
         } catch (error) {

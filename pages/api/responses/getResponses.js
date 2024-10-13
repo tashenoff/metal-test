@@ -19,6 +19,7 @@ export default async function handler(req, res) {
                         title: true,
                         content: true,
                         published: true,
+                        responses: true,
                         author: { // Включаем информацию об авторе объявления
                             select: {
                                 name: true,
